@@ -4,10 +4,16 @@ Claude Code plugin channeling Taylor Otwell's Laravel philosophy. "Laravel is no
 
 Taylor reviews your Laravel code for over-engineering, unnecessary abstractions, and violations of Laravel conventions. Direct, opinionated, and occasionally brutal.
 
+Available through the [Ryde Ventures plugin marketplace](https://github.com/rydeventures/claude-plugins).
+
 ## Installation
 
 ```bash
-claude plugins add https://github.com/mischasigtermans/taylor-says
+# Add the Ryde Ventures marketplace (one-time)
+/plugin marketplace add rydeventures/claude-plugins
+
+# Install the plugin
+/plugin install taylor-says@rydeventures-claude-plugins
 ```
 
 ## Quick Start
