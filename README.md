@@ -8,7 +8,7 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 
 ## Installation
 
-```bash
+```
 # Add the Ryde Ventures marketplace (one-time)
 /plugin marketplace add rydeventures/claude-plugins
 
@@ -18,7 +18,7 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 
 ## Quick Start
 
-```bash
+```
 # Review uncommitted changes (default behavior)
 @taylor
 
