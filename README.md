@@ -23,19 +23,19 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 @taylor
 
 # Review a specific file
-@taylor Review app/Services/UserService.php
+@taylor review app/Services/UserService.php
 
 # Hunt for over-engineering in your codebase
-@taylor Find unnecessary abstractions in my codebase
+@taylor find unnecessary abstractions in my codebase
 
 # Review an entire directory
-@taylor Review all files in app/Actions/
+@taylor review all files in app/Actions/
 
 # Find dead code
-@taylor Find interfaces with only one implementation
+@taylor find interfaces with only one implementation
 
 # Audit a pattern
-@taylor Check if my repository classes are actually needed
+@taylor check if my repository classes are actually needed
 ```
 
 ## What Taylor Looks For
@@ -87,6 +87,23 @@ class UserService implements UserServiceInterface {
 > "If your service just proxies to Eloquent, delete it."
 
 > "Enterprise PHP cosplaying as Laravel."
+
+## Knowledge System
+
+Taylor automatically loads relevant knowledge based on the files being reviewed:
+
+| File Pattern | Knowledge |
+|--------------|-----------|
+| Models, migrations | Eloquent best practices |
+| Controllers | Controller patterns |
+| Form Requests | Validation rules |
+| Routes, middleware | Routing patterns |
+| Policies | Authorization |
+| Views | Blade patterns |
+| Events, listeners | Event handling |
+| Tests | Testing practices |
+
+*Bonus: `@taylor cocacola` loads all knowledge for a comprehensive deep-dive.*
 
 ## Laravel Boost Integration
 

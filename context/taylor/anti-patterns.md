@@ -411,3 +411,231 @@ DB::transaction(function () use ($order) {
     $order->user->decrement('credits', $order->total);
 });
 ```
+
+---
+
+## 15. Dead Code
+
+**The Smell:**
+```php
+// Empty seeder that was scaffolded but never filled
+class PingPongMcpSeeder extends Seeder {
+    public function run(): void {
+        //
+    }
+}
+
+// Unused accessor on a model
+public function getIsUserMessageAttribute(): bool {
+    return $this->role === 'user'; // grep finds zero callers
+}
+
+// Scope that returns query unchanged
+public function scopeAutoDetected($query) {
+    return $query; // This is a lie - it filters nothing
+}
+```
+
+**Why It's Wrong:**
+- Dead code lies to future developers
+- Empty files suggest unfinished work
+- Scopes that don't filter pretend to do something they don't
+
+**Taylor Would Say:**
+> "Delete it. Dead code is technical debt with zero ROI. If grep finds zero callers, it doesn't exist."
+
+**The Laravel Way:**
+- Delete empty seeders, factories, and test stubs
+- Remove unused accessors and mutators
+- If a scope doesn't modify the query, delete it or implement it properly
+
+---
+
+## 16. Hidden HTTP Calls in Model Accessors
+
+**The Smell:**
+```php
+class Space extends Model {
+    protected $appends = ['context_count', 'memory_count', 'last_activity'];
+
+    public function getContextCountAttribute(): int {
+        return $this->getCortexData()['context_count']; // HTTP call!
+    }
+
+    private function getCortexData(): array {
+        return Http::get("api/spaces/{$this->cortex_id}")->json();
+    }
+}
+```
+
+**Why It's Wrong:**
+- Every `toArray()` or `toJson()` triggers N API calls via `$appends`
+- Looks like a simple property access, acts like a network request
+- Impossible to eager-load or batch
+- N+1 problem at the API level
+
+**Taylor Would Say:**
+> "A model accessor making HTTP calls is a trap. You've disguised a network request as a property. Sync the data locally or make the API call explicit."
+
+**The Laravel Way:**
+```php
+// Option 1: Sync data locally
+class Space extends Model {
+    // Store cortex data in local columns, sync on save
+    protected $fillable = ['context_count', 'memory_count'];
+}
+
+// Option 2: Make API calls explicit
+class Space extends Model {
+    public function loadCortexData(): self {
+        $data = $this->cortexClient->getSpace($this->cortex_id);
+        $this->cortex_data = $data;
+        return $this;
+    }
+}
+```
+
+---
+
+## 17. Error Swallowing
+
+**The Smell:**
+```php
+public function createBookmark(User $user, array $data): ?Bookmark
+{
+    try {
+        return Bookmark::create($data);
+    } catch (Exception $e) {
+        return null; // Silent failure
+    }
+}
+
+public function processPayment(): bool
+{
+    try {
+        $this->gateway->charge($this->amount);
+        return true;
+    } catch (Exception $e) {
+        return false; // Where did the error go?
+    }
+}
+```
+
+**Why It's Wrong:**
+- Hides real problems from developers
+- Debugging becomes guesswork
+- Silent failures are worse than loud crashes
+- The caller has no idea what went wrong
+
+**Taylor Would Say:**
+> "Let it fail. A crash you can debug. A silent `false` you can't. If something can fail, let it fail loudly."
+
+**The Laravel Way:**
+```php
+// Let exceptions bubble up
+public function createBookmark(User $user, array $data): Bookmark
+{
+    return Bookmark::create($data); // Throws on failure
+}
+
+// Or handle specifically with context
+public function processPayment(): bool
+{
+    try {
+        $this->gateway->charge($this->amount);
+        return true;
+    } catch (PaymentFailedException $e) {
+        Log::error('Payment failed', ['error' => $e->getMessage()]);
+        throw $e; // Re-throw after logging
+    }
+}
+```
+
+---
+
+## 18. Duplicated Methods Across Components
+
+**The Smell:**
+```php
+// In ViewChat.php
+protected function getPreviousUserMessage(): ?Message {
+    return $this->messages->where('role', 'user')->last();
+}
+
+// In ChatTimeline.php (copy-pasted)
+protected function getPreviousUserMessage(): ?Message {
+    return $this->messages->where('role', 'user')->last();
+}
+
+// In ChatHeader.php (copy-pasted again)
+protected function getPreviousUserMessage(): ?Message {
+    return $this->messages->where('role', 'user')->last();
+}
+```
+
+**Why It's Wrong:**
+- DRY violation
+- Bug fixes need to happen in multiple places
+- Different components might drift out of sync
+
+**Taylor Would Say:**
+> "Pick one home. Put it on the model, extract a trait, or use a shared concern. Copy-paste is not architecture."
+
+**The Laravel Way:**
+```php
+// Option 1: Put it on the model
+class Chat extends Model {
+    public function previousUserMessage(): ?Message {
+        return $this->messages()->where('role', 'user')->latest()->first();
+    }
+}
+
+// Option 2: Shared Livewire concern
+trait InteractsWithMessages {
+    protected function getPreviousUserMessage(): ?Message {
+        return $this->messages->where('role', 'user')->last();
+    }
+}
+
+// Option 3: If truly component-specific, at least document why it's duplicated
+```
+
+---
+
+## 19. God Components With Trait Explosion
+
+**The Smell:**
+```php
+class ViewChat extends Component
+{
+    use HandlesMessages,
+        HandlesStreaming,
+        HandlesSpaces,
+        HandlesBranching,
+        HandlesAttachments,
+        HandlesBookmarks,
+        HandlesFeedback;
+
+    // Component is now 1,400+ lines across 8 files
+}
+```
+
+**Why It's Wrong:**
+- Traits share state with the using class - this is horizontal inheritance
+- You're flipping between 8 files to understand one component
+- Hidden coupling via shared `$this` properties
+- "Organization theater, not simplification"
+
+**Taylor Would Say:**
+> "An 800-line component you can read top-to-bottom is better than a 200-line component that imports 600 lines of traits you have to mentally stitch together. Traits hide complexity, they don't remove it."
+
+**The Laravel Way:**
+```php
+// Decompose into child Livewire components
+<livewire:chat.message-composer :chat="$chat" />
+<livewire:chat.message-list :chat="$chat" />
+<livewire:chat.space-selector :chat="$chat" />
+
+// Each child owns its own state and concerns
+// Parent coordinates via events
+```
