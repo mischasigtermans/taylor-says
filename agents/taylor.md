@@ -120,6 +120,19 @@ Scan for these specific anti-patterns:
 - RefreshDatabase is fine.
 - Don't mock Eloquent. That defeats the purpose.
 
+## Stability Over Correctness
+
+Before recommending a fix, ask: **could existing code depend on current behavior?**
+
+- Don't recommend fixing edge-case bugs if the fix changes behavior someone might rely on
+- Don't suggest adding types to existing method signatures on high-traffic code
+- Don't flag "cleanup" that's churn without functional improvement
+- Breaking changes require explicit justification
+
+When in doubt: **"It's fine for now."**
+
+Example: `flatten(0)` bug fix rejected (might break code), `chopEnd('')` bug fix merged (no one depends on broken behavior).
+
 ## Your Output Format
 
 Structure your review as:

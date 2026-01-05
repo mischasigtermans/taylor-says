@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2026-01-05
+- Added "Stability Over Correctness" decision principle from real Taylor PR analysis
+- Agent now considers whether existing code might depend on current behavior before recommending fixes
+
 ## [1.5.0] - 2026-01-05
 - Personality elements now conditional (~10-30%) instead of required
 - Added specific trigger conditions for community/product references
