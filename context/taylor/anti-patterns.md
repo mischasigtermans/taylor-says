@@ -639,3 +639,187 @@ class ViewChat extends Component
 // Each child owns its own state and concerns
 // Parent coordinates via events
 ```
+
+---
+
+## 20. Interfaces for Testability Theater
+
+**The Smell:**
+```php
+// "I need to mock this, so I'll inject an interface"
+interface ClockInterface {
+    public function now(): Carbon;
+}
+
+class SystemClock implements ClockInterface {
+    public function now(): Carbon {
+        return Carbon::now();
+    }
+}
+
+// In tests:
+$mock = Mockery::mock(ClockInterface::class);
+$mock->shouldReceive('now')->andReturn(Carbon::parse('2024-01-01'));
+```
+
+**Why It's Wrong:**
+- Laravel's `Carbon::setTestNow()` has existed for a decade
+- You're not swapping clock implementations in production
+- Interface exists to satisfy testing dogma, not real need
+- Added complexity for something Laravel already solved
+
+**Taylor Would Say:**
+> "Carbon::setTestNow() exists. Delete the interface. This is testability theater."
+
+**The Laravel Way:**
+```php
+// In your test
+Carbon::setTestNow('2024-01-01');
+
+// In your code - just use Carbon directly
+$now = Carbon::now();
+
+// Laravel provides test helpers for:
+// - Time: Carbon::setTestNow()
+// - HTTP: Http::fake()
+// - Mail: Mail::fake()
+// - Queue: Queue::fake()
+// - Events: Event::fake()
+// - Storage: Storage::fake()
+```
+
+---
+
+## 21. Action Classes for Single Operations
+
+**The Smell:**
+```php
+class CreateUserAction {
+    public function execute(array $data): User {
+        return User::create($data);
+    }
+}
+
+class DeletePostAction {
+    public function execute(Post $post): bool {
+        return $post->delete();
+    }
+}
+
+// Usage
+app(CreateUserAction::class)->execute($validated);
+```
+
+**Why It's Wrong:**
+- An Action that calls one model method is noise
+- Actions are for complex multi-step operations
+- You've added a file, a class, and a method to wrap a one-liner
+- The "Action" pattern is being cargo-culted
+
+**Taylor Would Say:**
+> "If your Action is one line, it's not an Action. It's indirection with a fancy name."
+
+**When Actions ARE Appropriate:**
+```php
+// This earns its existence - multiple steps, side effects, coordination
+class ProcessSubscriptionRenewal {
+    public function execute(Subscription $subscription): void {
+        DB::transaction(function () use ($subscription) {
+            $subscription->renew();
+            $subscription->user->notify(new RenewalConfirmation);
+            event(new SubscriptionRenewed($subscription));
+        });
+
+        $this->analytics->track('subscription.renewed', [
+            'plan' => $subscription->plan->name,
+            'mrr' => $subscription->monthly_price,
+        ]);
+    }
+}
+```
+
+**The Laravel Way:**
+```php
+// For simple operations - just do it
+$user = User::create($validated);
+
+// Or put it on the model if there's logic
+$user = User::register($validated); // Model method
+
+// Or in the controller if it's request-specific
+public function store(StoreUserRequest $request): RedirectResponse
+{
+    $user = User::create($request->validated());
+    return redirect()->route('users.show', $user);
+}
+```
+
+---
+
+## 22. DTOs Wrapping Validated Requests
+
+**The Smell:**
+```php
+readonly class CreateUserData {
+    public function __construct(
+        public string $name,
+        public string $email,
+        public ?string $password,
+    ) {}
+
+    public static function fromRequest(Request $request): self {
+        return new self(
+            name: $request->input('name'),
+            email: $request->input('email'),
+            password: $request->input('password'),
+        );
+    }
+}
+
+// Usage
+public function store(StoreUserRequest $request): RedirectResponse
+{
+    $data = CreateUserData::fromRequest($request);
+    $user = User::create((array) $data); // Cast back to array anyway
+    return redirect()->route('users.show', $user);
+}
+```
+
+**Why It's Wrong:**
+- The Request already validates and holds the data
+- Form Requests ARE your DTO - they validate, authorize, and carry data
+- DTO adds a transformation step for no benefit
+- You're casting back to array anyway to pass to Eloquent
+
+**Taylor Would Say:**
+> "The request IS your DTO. It's already validated. Use `$request->validated()`. This is just typing practice."
+
+**The Laravel Way:**
+```php
+public function store(StoreUserRequest $request): RedirectResponse
+{
+    // $request->validated() gives you exactly what you need
+    $user = User::create($request->validated());
+    return redirect()->route('users.show', $user);
+}
+```
+
+**When DTOs ARE Appropriate:**
+```php
+// Transforming between systems with different shapes
+class StripeWebhookData {
+    public static function fromWebhook(array $payload): self {
+        // Complex transformation from Stripe's format to yours
+        return new self(
+            customerId: $payload['data']['object']['customer'],
+            amount: $payload['data']['object']['amount'] / 100,
+            currency: strtoupper($payload['data']['object']['currency']),
+        );
+    }
+}
+
+// API responses with specific contracts
+class UserResource extends JsonResource {
+    // This IS a DTO - transforming Model to API shape
+}
+```

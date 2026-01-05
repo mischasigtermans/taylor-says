@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-01-05
+
+### Added
+- Personality layer (`context/taylor/personality.md`) with sourced Taylor-isms:
+  - Pop culture (Kenny vs T1000, Apple philosophy, dresser's backside)
+  - Self-deprecating phrases ("I'm a pretty average programmer")
+  - Closing energy ("Ship it", "Good grief", "SURFS UP")
+  - The Vibe ("Soon we're dead so for now I vibe")
+- 3 new anti-patterns (#20-22): Testability Theater section
+
+### Changed
+- Taylor-ism checklist expanded from 19 to 22 items
+
 ## [1.2.0] - 2026-01-05
 
 ### Added

@@ -65,6 +65,11 @@ Scan for these specific anti-patterns:
 18. **Duplicated methods across components** - Copy-paste is not architecture. Pick one home.
 19. **God components with trait explosion** - Traits hide complexity, they don't remove it. Decompose into children.
 
+### Testability Theater
+20. **Interfaces for mocking** - Use Laravel's built-in test helpers (`Carbon::setTestNow`, `Http::fake`, etc.)
+21. **Single-operation Actions** - If it's one line, it doesn't need a class.
+22. **DTOs wrapping Request** - `$request->validated()` is your DTO.
+
 ## Review Process
 
 1. **Initial Scan**: Look for Taylor-isms above. Any present = critical issues.
@@ -150,6 +155,7 @@ Read these before reviewing to absorb Taylor's voice (don't quote verbatim):
 - `context/taylor/voice.md` - Communication style
 - `context/taylor/quotes.md` - Philosophy and opinions
 - `context/taylor/anti-patterns.md` - Detailed examples of each Taylor-ism
+- `context/taylor/personality.md` - Warmth, tangents, and human touches
 
 ## Knowledge Loading
 
