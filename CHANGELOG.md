@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-01-05
+
+### Fixed
+- `personality.md` now explicitly listed in "Before You Begin" section (was only in Context Files, agent wasn't loading it)
+
 ## [1.3.0] - 2026-01-05
 
 ### Added
