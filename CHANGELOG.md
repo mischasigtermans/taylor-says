@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2026-01-06
+- Added `@` imports for voice, quotes, and personality files (auto-loaded into context)
+- Knowledge files now accessible via `/search-knowledge` skill
+
 ## [1.5.1] - 2026-01-05
 - Added "Stability Over Correctness" decision principle from real Taylor PR analysis
 - Agent now considers whether existing code might depend on current behavior before recommending fixes
