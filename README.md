@@ -56,25 +56,71 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 
 ## Example Review
 
-**Input:** A service class with an interface
+**Input:** A `BookmarkService` that wraps Eloquent operations
 
 ```php
-// UserServiceInterface.php
-interface UserServiceInterface {
-    public function create(array $data): User;
-}
+class BookmarkService
+{
+    public function createBookmark(User $user, Chat $chat, string $messageId, string $role, string $content): ?Bookmark
+    {
+        try {
+            return DB::transaction(function () use ($user, $chat, $messageId, $role, $content): Bookmark {
+                $existing = Bookmark::forUser($user->id)
+                    ->where('chat_id', $chat->id)
+                    ->where('content_hash', sha1($content . $role))
+                    ->first();
 
-// UserService.php
-class UserService implements UserServiceInterface {
-    public function create(array $data): User {
-        return User::create($data);
+                if ($existing) {
+                    return $existing;
+                }
+
+                return Bookmark::create([/* ... */]);
+            });
+        } catch (Throwable $exception) {
+            Log::error('Failed to create bookmark', ['error' => $exception->getMessage()]);
+            return null;
+        }
     }
 }
 ```
 
 **Taylor says:**
 
-> "This is not Laravel. This is cargo cult programming. You have created an interface for a class that wraps a single Eloquent call. The interface has one implementation. The service has one method. Delete both and call `User::create()` directly. Laravel is not Spring."
+> ### Critical Issues
+>
+> **Service class that proxies models.** `BookmarkService` is the poster child for this anti-pattern. You have 150 lines of service code that exists primarily to call `Bookmark::create()` and `Bookmark::delete()`. The model is clean. The service is unnecessary ceremony.
+>
+> **Database transaction around a single query.** The transaction wraps a `first()` and a `create()`. If you're worried about race conditions on bookmark uniqueness, use a unique constraint and `firstOrCreate()`. The database handles this.
+>
+> **Error swallowing.** You're catching `Throwable`, logging it, and returning `null`. The caller has no idea what went wrong. If creation fails, it should fail loudly. Laravel's exception handler will log it AND you'll actually know something's broken.
+>
+> ### The Laravel Way
+>
+> Delete the service. Put the logic where it belongs:
+>
+> ```php
+> // In your Bookmark model
+> public static function toggle(User $user, Chat $chat, string $messageId, string $role, string $content): ?self
+> {
+>     $hash = sha1($content . $role);
+>
+>     $existing = static::forUser($user->id)
+>         ->where('chat_id', $chat->id)
+>         ->where('content_hash', $hash)
+>         ->first();
+>
+>     if ($existing) {
+>         $existing->delete();
+>         return null;
+>     }
+>
+>     return static::create([/* ... */]);
+> }
+> ```
+>
+> I once spent three days building an "elegant" abstraction layer that nobody ever extended or swapped out. It still haunts me. This service has that same energy - solving a problem that doesn't exist yet and probably never will.
+>
+> Delete `BookmarkService.php`. Ship it.
 
 ## Representative Quotes
 
@@ -130,6 +176,23 @@ Taylor's code philosophy centers on:
 
 > "You want your code to be like Kenny from South Park and not like T1000 from Terminator. Disposable, easy to change."
 > — Taylor Otwell
+
+## Benchmarks
+
+I take Taylor's quality seriously. Every release is benchmarked with **30 parallel Taylor agents** reviewing **6 different Laravel features** to ensure:
+
+| Metric | Current (v1.6.0) |
+|--------|:----------------:|
+| Consistency | 100% |
+| Authenticity | 8.8/10 |
+| Technical Depth | 9/10 |
+| Personality | 7/10 |
+
+Taylor has maintained **100% verdict consistency** since version 1.3.0 - every instance reviewing the same code reaches the same conclusion.
+
+See [BENCHMARK.md](BENCHMARK.md) for methodology and version history.
+
+> **Note:** Detailed benchmark reports, research materials, and prompt engineering artifacts are kept internal. The published plugin represents our best refinement of Taylor's voice and technical accuracy.
 
 ## Requirements
 
