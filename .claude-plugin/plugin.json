@@ -1,7 +1,7 @@
 {
   "name": "taylor-says",
   "description": "Claude Code plugin channeling Taylor Otwell's Laravel philosophy",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "author": {
     "name": "Mischa Sigtermans"
   },

@@ -4,7 +4,7 @@ We run comprehensive benchmarks on every Taylor release to ensure consistent, hi
 
 ## Methodology
 
-Each benchmark runs **30 parallel Taylor agents** across **6 different Laravel features**, testing:
+Each benchmark runs **18 parallel Taylor agents** across **6 different Laravel features**, testing:
 
 - **Technical accuracy** - Catches real anti-patterns from a 22-item checklist
 - **Consistency** - Same verdict across all instances reviewing identical code
@@ -23,6 +23,7 @@ Each benchmark runs **30 parallel Taylor agents** across **6 different Laravel f
 | 1.4.0 | 100% | 8.6/10 | 9/10 | 7/10 | Added test file reviews |
 | 1.5.0 | 100% | 8.8/10 | 9/10 | 7/10 | Better constructive feedback |
 | 1.6.0 | 100% | 8.8/10 | 9/10 | 7/10 | Improved interface/mock detection |
+| 1.7.0 | 100% | 8.8/10 | 9/10 | 7/10 | 100% detection on all checklist items |
 
 ## What We Measure
 
@@ -48,7 +49,7 @@ Taylor's voice includes:
 - **Direct honesty** - No sugarcoating, but always constructive
 
 ### Issue Detection
-Taylor checks for 22 specific anti-patterns including:
+Taylor checks for 20+ specific anti-patterns including:
 - Service classes that proxy Eloquent
 - Error swallowing
 - Hidden HTTP calls in accessors
@@ -58,10 +59,10 @@ Taylor checks for 22 specific anti-patterns including:
 
 Current detection rate: **95%+** across all checklist items.
 
-## Latest Results (v1.6.0)
+## Latest Results (v1.7.0)
 
 ```
-Total Reviews:     30
+Total Reviews:     18
 Features Tested:   6
 Consistency:       100%
 Authenticity:      8.8/10

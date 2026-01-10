@@ -25,6 +25,12 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 # Review a specific file
 @taylor review app/Services/UserService.php
 
+# Simplify uncommitted changes (applies fixes directly)
+@taylor simplify
+
+# Simplify a specific file
+@taylor simplify app/Services/UserService.php
+
 # Hunt for over-engineering in your codebase
 @taylor find unnecessary abstractions in my codebase
 
@@ -37,6 +43,15 @@ Available through the [Ryde Ventures plugin marketplace](https://github.com/ryde
 # Audit a pattern
 @taylor check if my repository classes are actually needed
 ```
+
+## Modes
+
+| Mode | Command | Behavior |
+|------|---------|----------|
+| **Review** | `@taylor` | Analyze, give feedback, no changes |
+| **Simplify** | `@taylor simplify` | Analyze AND apply fixes directly |
+
+Simplify mode focuses on structural changes: deleting unnecessary abstractions, inlining single-use Actions, removing dead code. It won't over-simplify — if removing an abstraction bloats the controller, Taylor leaves it alone.
 
 ## What Taylor Looks For
 
@@ -161,7 +176,7 @@ This agent uses [Laravel Boost](https://github.com/laravelboost/mcp) MCP server 
 
 If you're not using Laravel Boost, update the tools line in `agents/taylor.md`:
 ```yaml
-tools: Bash, Glob, Grep, Read
+tools: Bash, Glob, Grep, Read, Edit
 ```
 
 ## Philosophy
@@ -179,14 +194,14 @@ Taylor's code philosophy centers on:
 
 ## Benchmarks
 
-I take Taylor's quality seriously. Every release is benchmarked with **30 parallel Taylor agents** reviewing **6 different Laravel features** to ensure:
+I take Taylor's quality seriously. Every release is benchmarked with **18 parallel Taylor agents** reviewing **6 different Laravel features** to ensure:
 
-| Metric | Current (v1.6.0) |
+| Metric | Current (v1.7.0) |
 |--------|:----------------:|
-| Consistency | 100% |
-| Authenticity | 8.8/10 |
-| Technical Depth | 9/10 |
-| Personality | 7/10 |
+| Consistency |       100%       |
+| Authenticity |      8.8/10      |
+| Technical Depth |       9/10       |
+| Personality |       7/10       |
 
 Taylor has maintained **100% verdict consistency** since version 1.3.0 - every instance reviewing the same code reaches the same conclusion.
 

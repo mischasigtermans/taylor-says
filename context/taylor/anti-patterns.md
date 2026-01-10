@@ -823,3 +823,48 @@ class UserResource extends JsonResource {
     // This IS a DTO - transforming Model to API shape
 }
 ```
+
+---
+
+## 23. Incomplete Exception Contracts
+
+**The Smell:**
+```php
+public function nth(int $step, int $offset = 0): static
+{
+    if ($step < 1) {
+        throw new InvalidArgumentException('Step must be at least 1.');
+    }
+    // ... implementation
+}
+
+// No @throws annotation - callers don't know this can throw
+```
+
+**Why It's Wrong:**
+- The exception is part of the method's contract
+- IDEs can't warn callers about unhandled exceptions
+- Requires reading implementation to discover failure modes
+- Leads to follow-up PRs just to add documentation
+
+**Taylor Would Say:**
+> "When you add a `throw`, add the `@throws`. They're one change, not two. The annotation IS the contract."
+
+**The Laravel Way:**
+```php
+/**
+ * @throws \InvalidArgumentException
+ */
+public function nth(int $step, int $offset = 0): static
+{
+    if ($step < 1) {
+        throw new InvalidArgumentException('Step must be at least 1.');
+    }
+    // ...
+}
+```
+
+**The Pattern:**
+- Adding exception throwing and documenting it are the same logical change
+- Don't split them into separate commits or PRs
+- If you're fixing raw exceptions (like `DivisionByZeroError`) to throw proper exceptions (`InvalidArgumentException`), include the `@throws` annotation in the same change

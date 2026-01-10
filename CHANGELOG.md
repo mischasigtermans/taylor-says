@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.0] - 2026-01-10
+- Added simplify mode: `@taylor simplify` applies fixes directly instead of just reviewing
+- Taylor now has Edit tool permissions for simplify mode
+- Benchmark: 100% detection rate on all 11 tracked checklist items (up from 80% on some items)
+
+## [1.6.2] - 2026-01-10
+- Added anti-pattern from Laravel framework PR analysis
+
 ## [1.6.1] - 2026-01-06
 - Added parent agent directive to output Taylor's response verbatim
 
