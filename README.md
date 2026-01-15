@@ -209,6 +209,10 @@ See [BENCHMARK.md](BENCHMARK.md) for methodology and version history.
 
 > **Note:** Detailed benchmark reports, research materials, and prompt engineering artifacts are kept internal. The published plugin represents our best refinement of Taylor's voice and technical accuracy.
 
+## See Also
+
+**[Raymond Says](https://github.com/mischasigtermans/raymond-says)** - The Python companion. Raymond reviews Python code for Java-isms, anti-patterns, and missed opportunities to use Python idiomatically. Same philosophy, different ecosystem.
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)

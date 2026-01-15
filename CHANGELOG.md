@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.8.0] - 2026-01-13
+- Fixed broken symlinks in search-knowledge skill
+
 ## [1.7.0] - 2026-01-10
 - Added simplify mode: `@taylor simplify` applies fixes directly instead of just reviewing
 - Taylor now has Edit tool permissions for simplify mode
